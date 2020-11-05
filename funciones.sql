@@ -75,6 +75,7 @@ BEGIN
 END
 $$ LANGUAGE plpgsql;
 
+COPY LOCALIDAD FROM 'C:\Users\Agustin\Desktop\Facultad\Tercero\Primer Cuatrimestre\Base de datos I\TP\TP-SQL\localidades.csv' DELIMITER ',' CSV HEADER;
 CREATE TRIGGER fillData
     BEFORE INSERT
     ON AUXILIAR
