@@ -1,17 +1,19 @@
-CREATE TABLE pais
+-- CREACION DE TABLAS
+
+CREATE TABLE PAIS
 (
 id_pais serial not null primary key,
 nombre text not null unique
 );
 
-CREATE TABLE provincia
+CREATE TABLE PROVINCIA
 (
-provincia int not null primary key,
-id_pais int not null,
-foreign key (id_pais) references pais on delete restrict
+    provincia int not null primary key,
+    id_pais   int not null,
+    foreign key (id_pais) references PAIS on delete restrict
 );
 
-CREATE TABLE departamento
+CREATE TABLE DEPARTAMENTO
 (
 id_departamento serial not null primary key,
 departamento text not null unique,
