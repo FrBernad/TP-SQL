@@ -68,7 +68,7 @@ BEGIN
     INSERT INTO LOCALIDAD(nombre, id_departamento, canthab)
     VALUES (new.nombreLocalidad, auxIdDepto, cast(coalesce(new.canthab,0) as integer));
 
-    return NULL;
+    RETURN NULL;
 END
 $$ LANGUAGE plpgsql;
 
@@ -80,11 +80,11 @@ EXECUTE PROCEDURE validateData();
 
 COPY AUXILIAR (nombreLocalidad, nombrePais, idProv, nombreDepto, canthab) FROM 'C:\Users\Agustin\Desktop\Facultad\Tercero\Primer Cuatrimestre\Base de datos I\TP\TP-SQL\localidades.csv' WITH (FORMAT csv,HEADER TRUE);
 
-drop table LOCALIDAD;
-drop table DEPARTAMENTO;
-drop table PROVINCIA;
-drop table PAIS;
-drop table AUXILIAR;
+DROP TABLE LOCALIDAD;
+DROP TABLE DEPARTAMENTO;
+DROP TABLE PROVINCIA;
+DROP TABLE PAIS;
+DROP TABLE AUXILIAR;
 
 DROP FUNCTION validateData;
 
