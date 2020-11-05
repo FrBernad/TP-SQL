@@ -66,9 +66,11 @@ CREATE OR REPLACE FUNCTION validateData() RETURNS TRIGGER AS $$
         END;
 $$ LANGUAGE plpgsql;
 
-COPY 
+COPY LOCALIDAD FROM 'C:\Users\Agustin\Desktop\Facultad\Tercero\Primer Cuatrimestre\Base de datos I\TP\TP-SQL\localidades.csv' WITH (FORMAT csv);
 
 drop table LOCALIDAD;
 drop table departamento;
 drop table provincia;
 drop table pais;
+
+
