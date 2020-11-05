@@ -1,4 +1,3 @@
-TP-SQL
 # TP Especial - PostgresSQL
 
 # Autores
