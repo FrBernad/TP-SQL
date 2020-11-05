@@ -68,7 +68,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-COPY LOCALIDAD FROM 'C:\Users\Agustin\Desktop\Facultad\Tercero\Primer Cuatrimestre\Base de datos I\TP\TP-SQL\localidades.csv' WITH (FORMAT csv);
+COPY LOCALIDAD FROM 'C:\Users\Agustin\Desktop\Facultad\Tercero\Primer Cuatrimestre\Base de datos I\TP\TP-SQL\localidades.csv' DELIMITER ',' CSV HEADER;
 
 drop table LOCALIDAD;
 drop table departamento;
