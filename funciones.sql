@@ -1,68 +1,68 @@
 CREATE TABLE PAIS
 (
-    id_pais    serial not null primary key,
-    nombrePais text   not null unique
+    id_pais SERIAL NOT NULL PRIMARY KEY,
+    nombrePais TEXT NOT NULL UNIQUE
 );
 
 CREATE TABLE PROVINCIA
 (
-    id_prov int not null primary key,
-    id_pais int not null,
-    foreign key (id_pais) references PAIS on delete restrict
+    id_prov INT NOT NULL PRIMARY KEY,
+    id_pais INT NOT NULL,
+    FOREIGN KEY (id_pais) REFERENCES PAIS ON DELETE RESTRICT
 );
 
 CREATE TABLE DEPARTAMENTO
 (
-    id_departamento serial not null primary key,
-    nombreDepto     text   not null unique,
-    provincia       int    not null,
-    foreign key (provincia) references PROVINCIA on delete restrict
+    id_departamento SERIAL NOT NULL PRIMARY KEY,
+    nombreDepto TEXT NOT NULL UNIQUE,
+    provincia INT NOT NULL,
+    FOREIGN KEY (provincia) REFERENCES PROVINCIA ON DELETE RESTRICT
 );
 
 CREATE TABLE LOCALIDAD
 (
-    id_localidad    serial not null primary key,
-    nombre          text   not null,
-    id_departamento int    not null,
-    canthab         int,
-    foreign key (id_departamento) references DEPARTAMENTO on delete restrict
+    id_localidad SERIAL NOT NULL PRIMARY KEY,
+    nombre TEXT NOT NULL,
+    id_departamento INT NOT NULL,
+    canthab INT,
+    FOREIGN KEY (id_departamento) REFERENCES DEPARTAMENTO ON DELETE RESTRICT
 );
 
 CREATE TABLE AUXILIAR
 (
-    nombreLocalidad text,
-    nombrePais      text,
-    idProv          int,
-    nombreDepto     text,
-    canthab         int
+    nombreLocalidad TEXT,
+    nombrePais TEXT,
+    idProv INT,
+    nombreDepto TEXT,
+    canthab INT
 );
 
 
 CREATE OR REPLACE FUNCTION validateData() RETURNS TRIGGER AS
 $$
 DECLARE
-    auxIdPais      PAIS.id_pais%TYPE;
-    auxIdDepto     DEPARTAMENTO.id_departamento%TYPE;
+    auxIdPais PAIS.id_pais%TYPE;
+    auxIdDepto DEPARTAMENTO.id_departamento%TYPE;
     auxIdProvincia PROVINCIA.id_prov%TYPE;
 
 BEGIN
 
-    select id_pais into auxIdPais from pais where nombrePais = new.nombrePais;
-    if (auxIdPais is null) THEN
-        insert into pais(nombrePais) values (new.nombrePais);
-        select id_pais into auxIdPais from pais where nombrePais = new.nombrePais;
+    SELECT id_pais INTO auxIdPais FROM PAIS WHERE nombrePais = new.nombrePais;
+    IF (auxIdPais IS NULL) THEN
+        INSERT INTO PAIS(nombrePais) VALUES (new.nombrePais);
+        SELECT id_pais INTO auxIdPais FROM PAIS WHERE nombrePais = new.nombrePais;
     END IF;
 
-    select id_prov into auxIdProvincia from provincia where id_prov = new.idProv;
-    if (auxIdProvincia is null) THEN
-        auxIdProvincia = cast(new.idProv as integer);
-        insert into provincia values (auxIdProvincia, auxIdPais);
+    SELECT id_prov INTO auxIdProvincia FROM PROVINCIA WHERE id_prov = new.idProv;
+    IF (auxIdProvincia IS NULL) THEN
+        auxIdProvincia = CAST(new.idProv AS INTEGER);
+       INSERT INTO PROVINCIA VALUES (auxIdProvincia, auxIdPais);
     END IF;
 
-    select id_departamento into auxIdDepto from departamento where nombreDepto = new.nombreDepto;
+    SELECT id_departamento INTO auxIdDepto FROM DEPARTAMENTO WHERE nombreDepto = new.nombreDepto;
     if (auxIdDepto is null) THEN
         INSERT INTO DEPARTAMENTO(nombreDepto, provincia) VALUES (new.nombreDepto, auxIdProvincia);
-        select id_departamento into auxIdDepto from departamento where nombreDepto = new.nombreDepto;
+        SELECT id_departamento INTO auxIdDepto FROM DEPARTAMENTO WHERE nombreDepto = new.nombreDepto;
     END IF;
 
     INSERT INTO LOCALIDAD(nombre, id_departamento, canthab)
