@@ -14,7 +14,7 @@ CREATE TABLE PROVINCIA
 CREATE TABLE DEPARTAMENTO
 (
     id_departamento SERIAL NOT NULL PRIMARY KEY,
-    nombreDepto     TEXT   NOT NULL UNIQUE,
+    nombreDepto     TEXT   NOT NULL,
     provincia       INT    NOT NULL,
     FOREIGN KEY (provincia) REFERENCES PROVINCIA ON DELETE RESTRICT
 );
@@ -58,7 +58,8 @@ BEGIN
         INSERT INTO provincia values (auxIdProvincia, auxIdPais);
     END IF;
 
-    SELECT id_departamento INTO auxIdDepto FROM DEPARTAMENTO WHERE nombreDepto = new.nombreDepto;
+    SELECT id_departamento INTO auxIdDepto FROM DEPARTAMENTO
+    WHERE nombreDepto = new.nombreDepto and DEPARTAMENTO.provincia = auxIdProvincia;
     IF (auxIdDepto IS NULL) THEN
         INSERT INTO DEPARTAMENTO(nombreDepto, provincia) VALUES (new.nombreDepto, auxIdProvincia);
         SELECT id_departamento INTO auxIdDepto FROM DEPARTAMENTO WHERE nombreDepto = new.nombreDepto;
@@ -112,8 +113,6 @@ CREATE TRIGGER removeDataTrigger
     ON AUXILIAR
     FOR EACH ROW
 EXECUTE PROCEDURE removeData();
-
-COPY AUXILIAR (nombreLocalidad, nombrePais, idProv, nombreDepto, canthab) FROM 'C:\Users\Agustin\Desktop\Facultad\Tercero\Primer Cuatrimestre\Base de datos I\TP\TP-SQL\localidades.csv' WITH (FORMAT csv,HEADER TRUE);
 
 DROP TABLE LOCALIDAD;
 DROP TABLE DEPARTAMENTO;
