@@ -93,7 +93,7 @@ BEGIN
         DELETE FROM PROVINCIA WHERE id_prov = auxIdProvincia;
     END IF;
 
-     IF ((SELECT count(*) FROM PROVINCIA WHERE id_pais = auxIdPais) = 0) THEN
+    IF ((SELECT count(*) FROM PROVINCIA WHERE id_pais = auxIdPais) = 0) THEN
         DELETE FROM PAIS WHERE id_pais = auxIdPais;
     END IF;
 
@@ -121,16 +121,38 @@ DROP TABLE PROVINCIA;
 DROP TABLE PAIS;
 
 DROP TRIGGER seedDataTrigger ON AUXILIAR;
+DROP TRIGGER  removeDataTrigger ON AUXILIAR;
 
 DROP FUNCTION seedData;
+DROP FUNCTION removeData;
 
 DROP TABLE AUXILIAR;
 
-DELETE FROM auxiliar WHERE nombrePais = 'Argentina';
-DELETE FROM auxiliar WHERE nombreLocalidad = 'Allen';
-DELETE FROM auxiliar WHERE nombreDepto = 'General Roca' and nombreLocalidad!='Allen';
-DELETE FROM auxiliar WHERE idProv = 62;
-DELETE FROM auxiliar WHERE canthab = 740;
+DELETE
+FROM auxiliar
+WHERE nombrePais = 'Argentina';
 
-SELECT * FROM auxiliar WHERE nombreDepto = 'General Roca';
-SELECT * FROM DEPARTAMENTO WHERE nombreDepto = 'General Roca';
+DELETE
+FROM auxiliar
+WHERE nombreLocalidad = 'Allen';
+
+DELETE
+FROM auxiliar
+WHERE nombreDepto = 'General Roca'
+  and nombreLocalidad != 'Allen';
+
+DELETE
+FROM auxiliar
+WHERE idProv = 62;
+
+DELETE
+FROM auxiliar
+WHERE canthab = 740;
+
+SELECT *
+FROM auxiliar
+WHERE nombreDepto = 'General Roca';
+
+SELECT *
+FROM DEPARTAMENTO
+WHERE nombreDepto = 'General Roca';
