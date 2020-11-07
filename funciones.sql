@@ -168,7 +168,7 @@ DELETE FROM auxiliar WHERE nombrePais = 'Argentina';
 
 DELETE FROM auxiliar WHERE nombreLocalidad = 'Allen';
 
-DELETE FROM auxiliar WHERE nombreDepto = 'General Roca'   and nombreLocalidad != 'Allen';
+DELETE FROM auxiliar WHERE nombreDepto = 'General Roca' and nombreLocalidad != 'Allen';
 
 DELETE FROM auxiliar WHERE idProv = 62;
 
