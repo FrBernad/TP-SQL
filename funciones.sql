@@ -168,17 +168,5 @@ DELETE FROM AUXILIAR WHERE nombreDepto = 'General Roca' and idProv= 62;
 DELETE FROM AUXILIAR WHERE idProv = 62;
 DELETE FROM AUXILIAR WHERE canthab = 740;
 DELETE FROM AUXILIAR WHERE nombrePais ='Argentina';
-
-DELETE FROM auxiliar WHERE nombrePais = 'Argentina';
-
 DELETE FROM auxiliar WHERE nombreLocalidad = 'Allen';
-
 DELETE FROM auxiliar WHERE nombreDepto = 'General Roca'  and nombreLocalidad != 'Allen';
-
-DELETE FROM auxiliar WHERE idProv = 62;
-
-DELETE FROM auxiliar WHERE canthab = 740;
-
-SELECT * FROM auxiliar WHERE nombreDepto = 'General Roca';
-
-SELECT * FROM DEPARTAMENTO WHERE nombreDepto = 'General Roca';
