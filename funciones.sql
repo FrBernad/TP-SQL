@@ -1,7 +1,7 @@
 CREATE TABLE PAIS
 (
-    id_pais SERIAL NOT NULL PRIMARY KEY,
-    nombrePais TEXT NOT NULL UNIQUE
+    id_pais    SERIAL NOT NULL PRIMARY KEY,
+    nombrePais TEXT   NOT NULL UNIQUE
 );
 
 CREATE TABLE PROVINCIA
@@ -14,34 +14,34 @@ CREATE TABLE PROVINCIA
 CREATE TABLE DEPARTAMENTO
 (
     id_departamento SERIAL NOT NULL PRIMARY KEY,
-    nombreDepto TEXT NOT NULL UNIQUE,
-    provincia INT NOT NULL,
+    nombreDepto     TEXT   NOT NULL UNIQUE,
+    provincia       INT    NOT NULL,
     FOREIGN KEY (provincia) REFERENCES PROVINCIA ON DELETE RESTRICT
 );
 
 CREATE TABLE LOCALIDAD
 (
-    id_localidad SERIAL NOT NULL PRIMARY KEY,
-    nombre TEXT NOT NULL,
-    id_departamento INT NOT NULL,
-    canthab INT,
+    id_localidad    SERIAL NOT NULL PRIMARY KEY,
+    nombre          TEXT   NOT NULL,
+    id_departamento INT    NOT NULL,
+    canthab         INT,
     FOREIGN KEY (id_departamento) REFERENCES DEPARTAMENTO ON DELETE RESTRICT
 );
 
 CREATE TABLE AUXILIAR
 (
     nombreLocalidad TEXT,
-    nombrePais TEXT,
-    idProv INT,
-    nombreDepto TEXT,
-    canthab INT
+    nombrePais      TEXT,
+    idProv          INT,
+    nombreDepto     TEXT,
+    canthab         INT
 );
 
 CREATE OR REPLACE FUNCTION seedData() RETURNS TRIGGER AS
 $$
 DECLARE
-    auxIdPais PAIS.id_pais%TYPE;
-    auxIdDepto DEPARTAMENTO.id_departamento%TYPE;
+    auxIdPais      PAIS.id_pais%TYPE;
+    auxIdDepto     DEPARTAMENTO.id_departamento%TYPE;
     auxIdProvincia PROVINCIA.id_prov%TYPE;
 
 BEGIN
@@ -65,7 +65,7 @@ BEGIN
     END IF;
 
     INSERT INTO LOCALIDAD(nombre, id_departamento, canthab)
-    VALUES (new.nombreLocalidad, auxIdDepto, cast(coalesce(new.canthab, 0) as integer));
+    VALUES (new.nombreLocalidad, auxIdDepto, new.canthab);
 
     return new;
 END
@@ -73,9 +73,31 @@ $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION removeData() RETURNS TRIGGER AS
 $$
-BEGIN
+DECLARE
+    auxIdPais      PAIS.id_pais%TYPE;
+    auxIdDepto     DEPARTAMENTO.id_departamento%TYPE;
+    auxIdProvincia PROVINCIA.id_prov%TYPE;
 
-    return NULL;
+BEGIN
+    SELECT id_pais INTO auxIdPais FROM PAIS WHERE nombrePais = old.nombrePais;
+    select id_prov into auxIdProvincia from provincia where id_prov = old.idProv;
+    SELECT id_departamento INTO auxIdDepto FROM DEPARTAMENTO WHERE nombreDepto = old.nombreDepto;
+
+    delete from localidad where nombre = old.nombreLocalidad;
+
+    IF ((select count(*) from localidad where id_departamento = auxIdDepto) = 0) THEN
+        delete from departamento where id_departamento = auxIdDepto;
+    END IF;
+
+    IF ((select count(*) from departamento where provincia = auxIdProvincia) = 0) THEN
+        delete from provincia where id_prov = auxIdProvincia;
+    END IF;
+
+     IF ((select count(*) from provincia where id_pais = auxIdPais) = 0) THEN
+        delete from pais where id_pais = auxIdPais;
+    END IF;
+
+    return old;
 END
 $$ LANGUAGE plpgsql;
 
@@ -97,11 +119,6 @@ DROP TABLE LOCALIDAD;
 DROP TABLE DEPARTAMENTO;
 DROP TABLE PROVINCIA;
 DROP TABLE PAIS;
-DROP TABLE AUXILIAR;
-drop table LOCALIDAD;
-drop table DEPARTAMENTO;
-drop table PROVINCIA;
-drop table PAIS;
 
 DROP TRIGGER seedDataTrigger ON AUXILIAR;
 
@@ -109,5 +126,12 @@ DROP FUNCTION seedData;
 
 drop table AUXILIAR;
 
+DELETE FROM auxiliar WHERE nombrePais = 'Argentina';
+DELETE FROM auxiliar WHERE nombreLocalidad = 'Allen';
+DELETE FROM auxiliar WHERE nombreDepto = 'General Roca' and nombreLocalidad!='Allen';
+DELETE FROM auxiliar WHERE idProv = 62;
+DELETE FROM auxiliar WHERE canthab = 740;
+DELETE FROM auxiliar WHERE canthab = -1;
 
-
+SELECT * FROM auxiliar where nombreDepto = 'General Roca';
+SELECT * FROM departamento where nombreDepto = 'General Roca';
