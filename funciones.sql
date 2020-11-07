@@ -1,3 +1,8 @@
+-------------------------------------------------------
+            --  TABLES CREATION  --
+-------------------------------------------------------
+
+
 CREATE TABLE PAIS
 (
     id_pais    SERIAL NOT NULL PRIMARY KEY,
@@ -37,6 +42,12 @@ CREATE TABLE AUXILIAR
     canthab         INT
 );
 
+
+-------------------------------------------------------
+            -- TRIGGER FUNCTIONS --
+-------------------------------------------------------
+
+
 CREATE OR REPLACE FUNCTION seedData() RETURNS TRIGGER AS
 $$
 DECLARE
@@ -59,7 +70,7 @@ BEGIN
     END IF;
 
     SELECT id_departamento INTO auxIdDepto FROM DEPARTAMENTO
-    WHERE nombreDepto = new.nombreDepto and DEPARTAMENTO.provincia = auxIdProvincia;
+    WHERE nombreDepto = new.nombreDepto and provincia = auxIdProvincia;
     IF (auxIdDepto IS NULL) THEN
         INSERT INTO DEPARTAMENTO(nombreDepto, provincia) VALUES (new.nombreDepto, auxIdProvincia);
         SELECT id_departamento INTO auxIdDepto FROM DEPARTAMENTO WHERE nombreDepto = new.nombreDepto;
@@ -71,6 +82,8 @@ BEGIN
     RETURN new;
 END
 $$ LANGUAGE plpgsql;
+
+--------------------------------
 
 CREATE OR REPLACE FUNCTION removeData() RETURNS TRIGGER AS
 $$
@@ -102,11 +115,18 @@ BEGIN
 END
 $$ LANGUAGE plpgsql;
 
+
+-------------------------------------------------------
+            --  TABLES TRIGGERS  --
+-------------------------------------------------------
+
 CREATE TRIGGER seedDataTrigger
     BEFORE INSERT
     ON AUXILIAR
     FOR EACH ROW
 EXECUTE PROCEDURE seedData();
+
+-----------------------
 
 CREATE TRIGGER removeDataTrigger
     BEFORE DELETE
@@ -114,44 +134,46 @@ CREATE TRIGGER removeDataTrigger
     FOR EACH ROW
 EXECUTE PROCEDURE removeData();
 
+
+-------------------------------------------------------
+            --    TABLES DROPS   --
+-------------------------------------------------------
+
 DROP TABLE LOCALIDAD;
 DROP TABLE DEPARTAMENTO;
 DROP TABLE PROVINCIA;
 DROP TABLE PAIS;
 
+-----------------------
+
 DROP TRIGGER seedDataTrigger ON AUXILIAR;
-DROP TRIGGER  removeDataTrigger ON AUXILIAR;
+DROP TRIGGER removeDataTrigger ON AUXILIAR;
+
+-----------------------
 
 DROP FUNCTION seedData;
 DROP FUNCTION removeData;
 
+-----------------------
+
 DROP TABLE AUXILIAR;
 
-DELETE
-FROM auxiliar
-WHERE nombrePais = 'Argentina';
 
-DELETE
-FROM auxiliar
-WHERE nombreLocalidad = 'Allen';
+-------------------------------------------------------
+            --  DELETE EXAMPLES  --
+-------------------------------------------------------
 
-DELETE
-FROM auxiliar
-WHERE nombreDepto = 'General Roca'
-  and nombreLocalidad != 'Allen';
 
-DELETE
-FROM auxiliar
-WHERE idProv = 62;
+DELETE FROM auxiliar WHERE nombrePais = 'Argentina';
 
-DELETE
-FROM auxiliar
-WHERE canthab = 740;
+DELETE FROM auxiliar WHERE nombreLocalidad = 'Allen';
 
-SELECT *
-FROM auxiliar
-WHERE nombreDepto = 'General Roca';
+DELETE FROM auxiliar WHERE nombreDepto = 'General Roca'   and nombreLocalidad != 'Allen';
 
-SELECT *
-FROM DEPARTAMENTO
-WHERE nombreDepto = 'General Roca';
+DELETE FROM auxiliar WHERE idProv = 62;
+
+DELETE FROM auxiliar WHERE canthab = 740;
+
+SELECT * FROM auxiliar WHERE nombreDepto = 'General Roca';
+
+SELECT * FROM DEPARTAMENTO WHERE nombreDepto = 'General Roca';
