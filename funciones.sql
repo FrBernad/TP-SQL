@@ -37,8 +37,7 @@ CREATE TABLE AUXILIAR
     canthab         int
 );
 
-
-CREATE OR REPLACE FUNCTION validateData() RETURNS TRIGGER AS
+CREATE OR REPLACE FUNCTION seedData() RETURNS TRIGGER AS
 $$
 DECLARE
     auxIdPais      PAIS.id_pais%TYPE;
@@ -55,7 +54,7 @@ BEGIN
 
     select id_prov into auxIdProvincia from provincia where id_prov = new.idProv;
     if (auxIdProvincia is null) THEN
-        auxIdProvincia = cast(new.idProv as integer);
+        auxIdProvincia := cast(new.idProv as integer);
         insert into provincia values (auxIdProvincia, auxIdPais);
     END IF;
 
@@ -66,17 +65,31 @@ BEGIN
     END IF;
 
     INSERT INTO LOCALIDAD(nombre, id_departamento, canthab)
-    VALUES (new.nombreLocalidad, auxIdDepto, cast(coalesce(new.canthab,0) as integer));
+    VALUES (new.nombreLocalidad, auxIdDepto, cast(coalesce(new.canthab, 0) as integer));
+
+    return new;
+END
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION removeData() RETURNS TRIGGER AS
+$$
+BEGIN
 
     return NULL;
 END
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER fillData
+CREATE TRIGGER seedDataTrigger
     BEFORE INSERT
     ON AUXILIAR
     FOR EACH ROW
-EXECUTE PROCEDURE validateData();
+EXECUTE PROCEDURE seedData();
+
+CREATE TRIGGER removeDataTrigger
+    BEFORE DELETE
+    ON AUXILIAR
+    FOR EACH ROW
+EXECUTE PROCEDURE removeData();
 
 COPY AUXILIAR (nombreLocalidad, nombrePais, idProv, nombreDepto, canthab) FROM 'C:\Users\Agustin\Desktop\Facultad\Tercero\Primer Cuatrimestre\Base de datos I\TP\TP-SQL\localidades.csv' WITH (FORMAT csv,HEADER TRUE);
 
@@ -84,10 +97,12 @@ drop table LOCALIDAD;
 drop table DEPARTAMENTO;
 drop table PROVINCIA;
 drop table PAIS;
+
+DROP TRIGGER seedDataTrigger ON AUXILIAR;
+
+DROP FUNCTION seedData;
+
 drop table AUXILIAR;
 
-DROP FUNCTION validateData;
-
-DROP TRIGGER fillData ON AUXILIAR;
 
 
