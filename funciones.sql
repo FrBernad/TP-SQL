@@ -52,14 +52,14 @@ BEGIN
         SELECT id_pais INTO auxIdPais FROM PAIS WHERE nombrePais = new.nombrePais;
     END IF;
 
-    select id_prov into auxIdProvincia from provincia where id_prov = new.idProv;
-    if (auxIdProvincia is null) THEN
+    SELECT id_prov INTO auxIdProvincia FROM PROVINCIA WHERE id_prov = new.idProv;
+    IF (auxIdProvincia IS NULL) THEN
         auxIdProvincia := cast(new.idProv as integer);
-        insert into provincia values (auxIdProvincia, auxIdPais);
+        INSERT INTO provincia values (auxIdProvincia, auxIdPais);
     END IF;
 
     SELECT id_departamento INTO auxIdDepto FROM DEPARTAMENTO WHERE nombreDepto = new.nombreDepto;
-    if (auxIdDepto is null) THEN
+    IF (auxIdDepto IS NULL) THEN
         INSERT INTO DEPARTAMENTO(nombreDepto, provincia) VALUES (new.nombreDepto, auxIdProvincia);
         SELECT id_departamento INTO auxIdDepto FROM DEPARTAMENTO WHERE nombreDepto = new.nombreDepto;
     END IF;
@@ -67,7 +67,7 @@ BEGIN
     INSERT INTO LOCALIDAD(nombre, id_departamento, canthab)
     VALUES (new.nombreLocalidad, auxIdDepto, new.canthab);
 
-    return new;
+    RETURN new;
 END
 $$ LANGUAGE plpgsql;
 
@@ -80,24 +80,24 @@ DECLARE
 
 BEGIN
     SELECT id_pais INTO auxIdPais FROM PAIS WHERE nombrePais = old.nombrePais;
-    select id_prov into auxIdProvincia from provincia where id_prov = old.idProv;
+    SELECT id_prov INTO auxIdProvincia FROM PROVINCIA WHERE id_prov = old.idProv;
     SELECT id_departamento INTO auxIdDepto FROM DEPARTAMENTO WHERE nombreDepto = old.nombreDepto;
 
-    delete from localidad where nombre = old.nombreLocalidad;
+    DELETE FROM LOCALIDAD WHERE nombre = old.nombreLocalidad;
 
-    IF ((select count(*) from localidad where id_departamento = auxIdDepto) = 0) THEN
-        delete from departamento where id_departamento = auxIdDepto;
+    IF ((SELECT count(*) FROM LOCALIDAD WHERE id_departamento = auxIdDepto) = 0) THEN
+        DELETE FROM DEPARTAMENTO WHERE id_departamento = auxIdDepto;
     END IF;
 
-    IF ((select count(*) from departamento where provincia = auxIdProvincia) = 0) THEN
-        delete from provincia where id_prov = auxIdProvincia;
+    IF ((SELECT count(*) FROM DEPARTAMENTO WHERE provincia = auxIdProvincia) = 0) THEN
+        DELETE FROM PROVINCIA WHERE id_prov = auxIdProvincia;
     END IF;
 
-     IF ((select count(*) from provincia where id_pais = auxIdPais) = 0) THEN
-        delete from pais where id_pais = auxIdPais;
+     IF ((SELECT count(*) FROM PROVINCIA WHERE id_pais = auxIdPais) = 0) THEN
+        DELETE FROM PAIS WHERE id_pais = auxIdPais;
     END IF;
 
-    return old;
+    RETURN old;
 END
 $$ LANGUAGE plpgsql;
 
@@ -124,14 +124,13 @@ DROP TRIGGER seedDataTrigger ON AUXILIAR;
 
 DROP FUNCTION seedData;
 
-drop table AUXILIAR;
+DROP TABLE AUXILIAR;
 
 DELETE FROM auxiliar WHERE nombrePais = 'Argentina';
 DELETE FROM auxiliar WHERE nombreLocalidad = 'Allen';
 DELETE FROM auxiliar WHERE nombreDepto = 'General Roca' and nombreLocalidad!='Allen';
 DELETE FROM auxiliar WHERE idProv = 62;
 DELETE FROM auxiliar WHERE canthab = 740;
-DELETE FROM auxiliar WHERE canthab = -1;
 
-SELECT * FROM auxiliar where nombreDepto = 'General Roca';
-SELECT * FROM departamento where nombreDepto = 'General Roca';
+SELECT * FROM auxiliar WHERE nombreDepto = 'General Roca';
+SELECT * FROM DEPARTAMENTO WHERE nombreDepto = 'General Roca';
