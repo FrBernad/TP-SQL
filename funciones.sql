@@ -168,25 +168,32 @@ DROP VIEW AUXILIAR;
 --  DELETE EXAMPLES  --
 -------------------------------------------------------
 
+
 DELETE
 FROM AUXILIAR
 WHERE nombreLocalidad = 'Valle Verde';
+
 DELETE
 FROM AUXILIAR
 WHERE nombreDepto = 'General Roca'
   and idProv = 62;
+
 DELETE
 FROM AUXILIAR
 WHERE idProv = 62;
+
 DELETE
 FROM AUXILIAR
 WHERE canthab = 740;
+
 DELETE
 FROM AUXILIAR
 WHERE nombrePais = 'Argentina';
+
 DELETE
 FROM auxiliar
 WHERE nombreLocalidad = 'Allen';
+
 DELETE
 FROM auxiliar
 WHERE nombreDepto = 'General Roca'
