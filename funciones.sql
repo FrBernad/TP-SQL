@@ -34,9 +34,16 @@ CREATE TABLE LOCALIDAD
 );
 
 CREATE VIEW AUXILIAR (nombreLocalidad, nombrePais, idProv, nombreDepto, cantHab) as
-(select nombre, nombrePais, id_prov, nombreDepto, canthab
-from ( (select *  from PAIS join PROVINCIA P on PAIS.id_pais = P.id_pais) as AUX  join
-    (select * from DEPARTAMENTO join LOCALIDAD L on DEPARTAMENTO.id_departamento = L.id_departamento) as AUX2 on AUX.id_prov = AUX2.provincia));
+(
+select nombre, nombrePais, id_prov, nombreDepto, canthab
+from ((select *
+       from PAIS
+                join PROVINCIA P on PAIS.id_pais = P.id_pais) as AUX
+         join
+     (select *
+      from DEPARTAMENTO
+               join LOCALIDAD L on DEPARTAMENTO.id_departamento = L.id_departamento) as AUX2
+     on AUX.id_prov = AUX2.provincia));
 
 
 -------------------------------------------------------
@@ -72,7 +79,7 @@ BEGIN
       and provincia = auxIdProvincia;
     IF (auxIdDepto IS NULL) THEN
         INSERT INTO DEPARTAMENTO(nombreDepto, provincia) VALUES (new.nombreDepto, auxIdProvincia);
-        SELECT id_departamento INTO auxIdDepto FROM DEPARTAMENTO WHERE nombreDepto = new.nombreDepto;
+        SELECT id_departamento INTO auxIdDepto FROM DEPARTAMENTO WHERE nombreDepto = new.nombreDepto and provincia = auxIdProvincia;
     END IF;
 
     INSERT INTO LOCALIDAD(nombre, id_departamento, canthab)
@@ -94,7 +101,7 @@ DECLARE
 BEGIN
     SELECT id_pais INTO auxIdPais FROM PAIS WHERE nombrePais = old.nombrePais;
     SELECT id_prov INTO auxIdProvincia FROM PROVINCIA WHERE id_prov = old.idProv;
-    SELECT id_departamento INTO auxIdDepto FROM DEPARTAMENTO WHERE nombreDepto = old.nombreDepto;
+    SELECT id_departamento INTO auxIdDepto FROM DEPARTAMENTO WHERE nombreDepto = old.nombreDepto and provincia=auxIdProvincia;
 
     DELETE FROM LOCALIDAD WHERE nombre = old.nombreLocalidad;
 
@@ -138,10 +145,10 @@ EXECUTE PROCEDURE removeData();
 --    TABLES DROPS   --
 -------------------------------------------------------
 
-DROP TABLE LOCALIDAD;
-DROP TABLE DEPARTAMENTO;
-DROP TABLE PROVINCIA;
-DROP TABLE PAIS;
+DROP TABLE LOCALIDAD cascade;
+DROP TABLE DEPARTAMENTO cascade;
+DROP TABLE PROVINCIA cascade;
+DROP TABLE PAIS cascade;
 
 -----------------------
 
@@ -156,7 +163,6 @@ DROP FUNCTION removeData;
 -----------------------
 
 DROP VIEW AUXILIAR;
-
 
 -------------------------------------------------------
 --  DELETE EXAMPLES  --
