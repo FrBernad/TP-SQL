@@ -1,5 +1,5 @@
 -------------------------------------------------------
-            --  TABLES CREATION  --
+--  TABLES CREATION  --
 -------------------------------------------------------
 
 
@@ -33,18 +33,14 @@ CREATE TABLE LOCALIDAD
     FOREIGN KEY (id_departamento) REFERENCES DEPARTAMENTO ON DELETE RESTRICT
 );
 
-CREATE TABLE AUXILIAR
-(
-    nombreLocalidad TEXT,
-    nombrePais      TEXT,
-    idProv          INT,
-    nombreDepto     TEXT,
-    canthab         INT
-);
+CREATE VIEW AUXILIAR (nombreLocalidad, nombrePais, idProv, nombreDepto, cantHab) as
+(select nombre, nombrePais, id_prov, nombreDepto, canthab
+from ( (select *  from PAIS join PROVINCIA P on PAIS.id_pais = P.id_pais) as AUX  join
+    (select * from DEPARTAMENTO join LOCALIDAD L on DEPARTAMENTO.id_departamento = L.id_departamento) as AUX2 on AUX.id_prov = AUX2.provincia));
 
 
 -------------------------------------------------------
-            -- TRIGGER FUNCTIONS --
+-- TRIGGER FUNCTIONS --
 -------------------------------------------------------
 
 
@@ -69,8 +65,11 @@ BEGIN
         INSERT INTO provincia values (auxIdProvincia, auxIdPais);
     END IF;
 
-    SELECT id_departamento INTO auxIdDepto FROM DEPARTAMENTO
-    WHERE nombreDepto = new.nombreDepto and provincia = auxIdProvincia;
+    SELECT id_departamento
+    INTO auxIdDepto
+    FROM DEPARTAMENTO
+    WHERE nombreDepto = new.nombreDepto
+      and provincia = auxIdProvincia;
     IF (auxIdDepto IS NULL) THEN
         INSERT INTO DEPARTAMENTO(nombreDepto, provincia) VALUES (new.nombreDepto, auxIdProvincia);
         SELECT id_departamento INTO auxIdDepto FROM DEPARTAMENTO WHERE nombreDepto = new.nombreDepto;
@@ -117,11 +116,11 @@ $$ LANGUAGE plpgsql;
 
 
 -------------------------------------------------------
-            --  TABLES TRIGGERS  --
+--  TABLES TRIGGERS  --
 -------------------------------------------------------
 
 CREATE TRIGGER seedDataTrigger
-    BEFORE INSERT
+    INSTEAD OF INSERT
     ON AUXILIAR
     FOR EACH ROW
 EXECUTE PROCEDURE seedData();
@@ -129,14 +128,14 @@ EXECUTE PROCEDURE seedData();
 -----------------------
 
 CREATE TRIGGER removeDataTrigger
-    BEFORE DELETE
+    INSTEAD OF DELETE
     ON AUXILIAR
     FOR EACH ROW
 EXECUTE PROCEDURE removeData();
 
 
 -------------------------------------------------------
-            --    TABLES DROPS   --
+--    TABLES DROPS   --
 -------------------------------------------------------
 
 DROP TABLE LOCALIDAD;
@@ -156,17 +155,33 @@ DROP FUNCTION removeData;
 
 -----------------------
 
-DROP TABLE AUXILIAR;
+DROP VIEW AUXILIAR;
 
 
 -------------------------------------------------------
-            --  DELETE EXAMPLES  --
+--  DELETE EXAMPLES  --
 -------------------------------------------------------
 
-DELETE FROM AUXILIAR WHERE nombreLocalidad = 'Valle Verde';
-DELETE FROM AUXILIAR WHERE nombreDepto = 'General Roca' and idProv= 62;
-DELETE FROM AUXILIAR WHERE idProv = 62;
-DELETE FROM AUXILIAR WHERE canthab = 740;
-DELETE FROM AUXILIAR WHERE nombrePais ='Argentina';
-DELETE FROM auxiliar WHERE nombreLocalidad = 'Allen';
-DELETE FROM auxiliar WHERE nombreDepto = 'General Roca'  and nombreLocalidad != 'Allen';
+DELETE
+FROM AUXILIAR
+WHERE nombreLocalidad = 'Valle Verde';
+DELETE
+FROM AUXILIAR
+WHERE nombreDepto = 'General Roca'
+  and idProv = 62;
+DELETE
+FROM AUXILIAR
+WHERE idProv = 62;
+DELETE
+FROM AUXILIAR
+WHERE canthab = 740;
+DELETE
+FROM AUXILIAR
+WHERE nombrePais = 'Argentina';
+DELETE
+FROM auxiliar
+WHERE nombreLocalidad = 'Allen';
+DELETE
+FROM auxiliar
+WHERE nombreDepto = 'General Roca'
+  and nombreLocalidad != 'Allen';
