@@ -175,8 +175,7 @@ WHERE nombreLocalidad = 'Valle Verde';
 
 DELETE
 FROM AUXILIAR
-WHERE nombreDepto = 'General Roca'
-  and idProv = 62;
+WHERE nombreDepto = 'General Roca' and idProv = 62;
 
 DELETE
 FROM AUXILIAR
