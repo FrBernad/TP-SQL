@@ -62,8 +62,7 @@ BEGIN
 
     SELECT id_pais INTO auxIdPais FROM PAIS WHERE nombrePais = new.nombrePais;
     IF (auxIdPais IS NULL) THEN
-        INSERT INTO PAIS(nombrePais) VALUES (new.nombrePais);
-        SELECT id_pais INTO auxIdPais FROM PAIS WHERE nombrePais = new.nombrePais;
+        INSERT INTO PAIS(nombrePais) VALUES (new.nombrePais) RETURNING id_pais INTO auxIdPais;
     END IF;
 
     SELECT id_prov INTO auxIdProvincia FROM PROVINCIA WHERE id_prov = new.idProv;
@@ -72,18 +71,18 @@ BEGIN
         INSERT INTO provincia values (auxIdProvincia, auxIdPais);
     END IF;
 
-    SELECT id_departamento
-    INTO auxIdDepto
-    FROM DEPARTAMENTO
-    WHERE nombreDepto = new.nombreDepto
-      and provincia = auxIdProvincia;
+    SELECT id_departamento INTO auxIdDepto FROM DEPARTAMENTO WHERE nombreDepto = new.nombreDepto AND provincia = auxIdProvincia;
     IF (auxIdDepto IS NULL) THEN
-        INSERT INTO DEPARTAMENTO(nombreDepto, provincia) VALUES (new.nombreDepto, auxIdProvincia);
-        SELECT id_departamento INTO auxIdDepto FROM DEPARTAMENTO WHERE nombreDepto = new.nombreDepto and provincia = auxIdProvincia;
+        INSERT INTO DEPARTAMENTO(nombreDepto, provincia)
+        VALUES (new.nombreDepto, auxIdProvincia)
+        RETURNING id_departamento INTO auxIdDepto;
     END IF;
 
-    INSERT INTO LOCALIDAD(nombre, id_departamento, canthab)
-    VALUES (new.nombreLocalidad, auxIdDepto, new.canthab);
+    IF((SELECT count(*) FROM LOCALIDAD where nombre = new.nombreLocalidad AND id_departamento = auxIdDepto) != 0) THEN
+        raise EXCEPTION 'LA TUPLA % esta repetida',new;
+    END IF;
+
+    INSERT INTO LOCALIDAD(nombre, id_departamento, canthab) VALUES (new.nombreLocalidad, auxIdDepto, new.canthab);
 
     RETURN new;
 END
@@ -101,21 +100,28 @@ DECLARE
 BEGIN
     SELECT id_pais INTO auxIdPais FROM PAIS WHERE nombrePais = old.nombrePais;
     SELECT id_prov INTO auxIdProvincia FROM PROVINCIA WHERE id_prov = old.idProv;
-    SELECT id_departamento INTO auxIdDepto FROM DEPARTAMENTO WHERE nombreDepto = old.nombreDepto and provincia=auxIdProvincia;
+
+    SELECT id_departamento
+    INTO auxIdDepto
+    FROM DEPARTAMENTO
+    WHERE nombreDepto = old.nombreDepto and provincia = auxIdProvincia;
 
     DELETE FROM LOCALIDAD WHERE nombre = old.nombreLocalidad;
 
     IF ((SELECT count(*) FROM LOCALIDAD WHERE id_departamento = auxIdDepto) = 0) THEN
         DELETE FROM DEPARTAMENTO WHERE id_departamento = auxIdDepto;
+
+        IF ((SELECT count(*) FROM DEPARTAMENTO WHERE provincia = auxIdProvincia) = 0) THEN
+            DELETE FROM PROVINCIA WHERE id_prov = auxIdProvincia;
+
+            IF ((SELECT count(*) FROM PROVINCIA WHERE id_pais = auxIdPais) = 0) THEN
+                DELETE FROM PAIS WHERE id_pais = auxIdPais;
+            END IF;
+
+        END IF;
+
     END IF;
 
-    IF ((SELECT count(*) FROM DEPARTAMENTO WHERE provincia = auxIdProvincia) = 0) THEN
-        DELETE FROM PROVINCIA WHERE id_prov = auxIdProvincia;
-    END IF;
-
-    IF ((SELECT count(*) FROM PROVINCIA WHERE id_pais = auxIdPais) = 0) THEN
-        DELETE FROM PAIS WHERE id_pais = auxIdPais;
-    END IF;
 
     RETURN old;
 END
@@ -175,7 +181,8 @@ WHERE nombreLocalidad = 'Valle Verde';
 
 DELETE
 FROM AUXILIAR
-WHERE nombreDepto = 'General Roca' and idProv = 62;
+WHERE nombreDepto = 'General Roca'
+  and idProv = 62;
 
 DELETE
 FROM AUXILIAR
