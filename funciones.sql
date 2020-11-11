@@ -79,7 +79,7 @@ BEGIN
     END IF;
 
     IF((SELECT count(*) FROM LOCALIDAD where nombre = new.nombreLocalidad AND id_departamento = auxIdDepto) != 0) THEN
-        raise EXCEPTION 'LA TUPLA % esta repetida',new;
+        raise EXCEPTION 'LA TUPLA % ESTA REPETIDA',new;
     END IF;
 
     INSERT INTO LOCALIDAD(nombre, id_departamento, canthab) VALUES (new.nombreLocalidad, auxIdDepto, new.canthab);
